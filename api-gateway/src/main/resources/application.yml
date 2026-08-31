@@ -1,0 +1,31 @@
+server:
+  port: 4004
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+        ## Eg - REST Client -> http://localhost:4004/api/patients
+        ## API Gateway will Rewrite the request -> http://patient-service:4000/patients
+        ## PATIENT SERVICE (SPRING BOOT) -> /patients -> return Patients array
+          - id: patient-service-route
+            uri: http://patient-service:4000
+            predicates:
+              - Path=/api/patients/**
+            filters:
+              - StripPrefix=1
+
+        ## REST Client -> http://localhost:4004/api-docs/patients
+        ## API-GATEWAY -> http://patient-service:4000/v3/api-docs
+          - id: api-docs-patient-route
+            uri: http://patient-service:4000
+            predicates:
+              - Path=/api-docs/patients
+            filters:
+              - RewritePath=/api-docs/patients,/v3/api-docs
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
